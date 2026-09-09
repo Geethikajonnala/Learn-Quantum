@@ -141,7 +141,6 @@ button { cursor: pointer; }
 .sidebar.collapsed .sidebar-heading > div, .sidebar.collapsed .progress-block, .sidebar.collapsed .nav-label, .sidebar.collapsed .chapter-name, .sidebar.collapsed .chapter-check, .sidebar.collapsed .sidebar-footnote { display: none; }
 .sidebar.collapsed .chapter-submenu, .sidebar.collapsed .chapter-toggle { display: none; }
 .sidebar.collapsed .chapter-item { padding-left: 9px; }
-.sidebar.collapsed + .main-content { }
 
 @media (max-width: 900px) {
   .topbar { padding: 0 25px; }
@@ -386,6 +385,46 @@ body { background: #fff; }
 .inline-equation { margin: 10px 0; color: var(--teal-dark); font: 13px var(--mono); }
 .interference-flow { width: min(100%, 400px); }
 .interference-flow div { display: flex; justify-content: space-between; width: 150px; color: var(--teal); font: 11px var(--mono); }
+.math-lesson .qubit-section p { max-width: 720px; }
+.vector-equation { display: flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; margin: 15px 0 17px; padding: 13px 18px; border-left: 3px solid var(--teal); background: #f5f8fb; color: var(--teal-dark); font: 17px/1.35 var(--mono); white-space: nowrap; overflow-x: auto; }
+.vector-equation span { display: inline-block; text-align: center; line-height: 1.3; }
+.vector-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: min(100%, 500px); margin: 15px 0 4px; }
+.vector-pair > div { display: flex; align-items: center; justify-content: center; gap: 9px; min-width: 0; padding: 14px; border: 1px solid #dce9f4; background: #fbfdff; color: var(--teal-dark); font: 14px var(--mono); }
+.vector-pair span { text-align: center; line-height: 1.3; }
+.vectors-takeaway ul { margin: 12px 0 14px; color: var(--ink-soft); font-size: 12px; line-height: 1.8; }
+.vectors-takeaway > strong { display: block; color: var(--teal-dark); font: 12px/1.5 var(--mono); }
+.matrix-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; max-width: 620px; margin: 16px 0 20px; }
+.matrix-list > div { display: grid; gap: 8px; padding: 14px; border: 1px solid #dce9f4; background: #fbfdff; color: var(--teal-dark); }
+.matrix-list strong { font-size: 12px; }
+.matrix-list span { font: 12px/1.45 var(--mono); white-space: nowrap; }
+.matrix-list small { color: #71839d; font-size: 10px; line-height: 1.5; }
+.gate-section { padding: 0 0 20px; margin: 18px 0 22px; border-bottom: 1px solid var(--line); }
+.gate-section h3 { margin: 0 0 8px; color: var(--teal-dark); }
+.gate-section p { margin-bottom: 11px; }
+.gate-section .qubit-equation { margin: 11px 0; }
+.gate-use { display: block; margin: 8px 0; color: #71839d; font-size: 10px; line-height: 1.5; }
+.gate-takeaway { color: var(--teal-dark) !important; font-size: 11px !important; }
+.gate-comparison { display: grid; max-width: 680px; margin: 18px 0; border: 1px solid #dce9f4; font-size: 10px; }
+.gate-comparison > div { display: grid; grid-template-columns: 1fr 70px minmax(0, 2fr); gap: 12px; padding: 8px 12px; border-bottom: 1px solid #dce9f4; }
+.gate-comparison > div:last-child { border-bottom: 0; }
+.gate-comparison > div:first-child { background: #f5f8fb; color: var(--teal-dark); font-weight: 700; }
+.gate-comparison span { color: var(--ink-soft); }
+.gates-lesson .math-flow { width: min(100%, 680px); display: flex; flex-wrap: wrap; justify-content: center; }
+.gate-detail h3 { margin-top: 27px; color: var(--teal-dark); }
+.hdqs-code, .hdqs-output { max-width: 100%; margin: 14px 0 20px; padding: 16px 18px; overflow-x: auto; border: 1px solid #dce9f4; border-left: 3px solid var(--teal); background: #f5f8fb; color: var(--teal-dark); font: 12px/1.65 var(--mono); white-space: pre; }
+.hdqs-code { border-left-color: var(--coral); background: #f8fbfe; }
+.hdqs-output { border-left-color: var(--teal); background: #142a4a; color: #e5f4fb; }
+.hdqs-code code, .hdqs-output code { font: inherit; }
+.code-explanation { margin: 12px 0 22px; padding-left: 20px; color: var(--ink-soft); font-size: 12px; line-height: 1.75; }
+.code-explanation li { padding: 3px 0; }
+.code-explanation li::marker { color: var(--coral); }
+.euler-visual { display: flex; align-items: center; gap: 18px; width: fit-content; margin: 18px 0 4px; color: #71839d; font: 10px var(--mono); }
+.euler-circle { position: relative; width: 108px; height: 108px; border: 1px solid #74badc; border-radius: 50%; background: #fbfdff; }
+.euler-circle::before { content: ''; position: absolute; inset: 25px; border: 1px solid #d5eaf4; border-radius: 50%; }
+.euler-axis { position: absolute; background: #a8c8d8; }
+.euler-axis.horizontal { top: 53px; left: 8px; right: 8px; height: 1px; }
+.euler-axis.vertical { top: 8px; bottom: 8px; left: 53px; width: 1px; }
+.euler-point { position: absolute; top: 19px; left: 71px; width: 9px; height: 9px; border-radius: 50%; background: var(--coral); box-shadow: 0 0 0 4px #fceee9; }
 .entangled-basis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .entangled-basis > div { padding: 14px 8px; text-align: center; }
 .entangled-basis strong { margin: 0; }
@@ -405,6 +444,15 @@ body { background: #fff; }
 .creation-flow strong { display: grid; place-items: center; min-width: 34px; min-height: 28px; border: 1px solid #9fd8eb; background: #eefaff; color: var(--teal); font-size: 12px; }
 .circuit-sketch { width: fit-content; margin: 18px 0; color: var(--teal-dark); font: 13px/1.7 var(--mono); white-space: pre; }
 .circuit-sketch b { color: var(--teal); }.circuit-sketch strong { color: var(--coral); }.circuit-sketch i { color: #9ab0c5; font-style: normal; }
+.measurement-outcome-flow { display: flex; align-items: center; gap: 28px; width: fit-content; margin: 18px 0 25px; color: var(--teal-dark); }
+.measurement-outcome-flow div { display: grid; justify-items: center; gap: 6px; min-width: 48px; }
+.measurement-outcome-flow strong { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid #9fd8eb; border-radius: 50%; background: #eefaff; color: var(--teal); font: 18px var(--mono); }
+.measurement-outcome-flow span, .measurement-outcome-flow > i { color: #71839d; font: 11px var(--mono); }
+.measurement-outcome-flow > i { font-style: normal; }
+.measurement-interactive { padding: 18px 20px; border: 1px solid #d9edf8; background: #fbfdff; }
+.measurement-interactive h2 { margin-top: 8px; }
+.measure-demo { display: flex; align-items: center; gap: 15px; margin: 17px 0; color: #71839d; font: 11px var(--mono); }
+.measure-state { display: grid; place-items: center; width: 60px; height: 60px; border: 1px solid #74badc; border-radius: 50%; background: #eefaff; color: var(--teal-dark); font: 18px var(--mono); }
 
 @media (max-width: 560px) {
   .amplitude-flow { align-items: stretch; flex-direction: column; width: 100%; }
@@ -415,6 +463,15 @@ body { background: #fff; }
   .pair-display { gap: 7px; font-size: 11px; }
   .pair-display > i { max-width: 80px; }
   .circuit-sketch { font-size: 10px; }
+  .measurement-outcome-flow { gap: 16px; }
+  .measurement-interactive { padding: 16px; }
+  .euler-visual { align-items: flex-start; flex-direction: column; }
+  .vector-pair { grid-template-columns: 1fr; }
+  .vector-equation { font-size: 14px; padding: 12px 14px; }
+  .matrix-list { grid-template-columns: 1fr; }
+  .gate-comparison > div { grid-template-columns: 1fr 48px minmax(0, 1.8fr); gap: 7px; padding: 8px; }
+  .gates-lesson .math-flow { justify-content: flex-start; }
+  .hdqs-code, .hdqs-output { padding: 13px 14px; font-size: 11px; }
 }
 .qubit-section ul { max-width: 700px; }
 .qubit-equation { width: fit-content; max-width: 100%; margin: 15px 0 17px; padding: 15px 20px; border-left: 3px solid var(--teal); background: #f5f8fb; color: var(--teal-dark); font: 17px var(--mono); white-space: nowrap; overflow-x: auto; }
