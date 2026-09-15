@@ -401,6 +401,8 @@ body { background: #fff; }
 .gate-section { padding: 0 0 20px; margin: 18px 0 22px; border-bottom: 1px solid var(--line); }
 .gate-section h3 { margin: 0 0 8px; color: var(--teal-dark); }
 .gate-section p { margin-bottom: 11px; }
+.gate-image { width: min(100%, 520px); margin: 18px 0 0; }
+.gate-image img { display: block; width: 100%; height: auto; }
 .gate-section .qubit-equation { margin: 11px 0; }
 .gate-use { display: block; margin: 8px 0; color: #71839d; font-size: 10px; line-height: 1.5; }
 .gate-takeaway { color: var(--teal-dark) !important; font-size: 11px !important; }
