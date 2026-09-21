@@ -44,6 +44,9 @@ const algorithmTopics = [
   { title: 'VQE – Variational Quantum Eigensolver', intro: 'Use a parameterized circuit and a classical optimizer to estimate a system’s lowest energy.', goal: 'VQE is a hybrid algorithm for estimating an eigenvalue, often the ground-state energy of a quantum system. A tunable circuit prepares candidate states while a classical computer chooses better parameters.', steps: ['Choose an ansatz, a parameterized circuit that can prepare candidate states.', 'Measure the expectation value of the problem Hamiltonian for the current parameters.', 'Use a classical optimizer to update parameters and repeat until the energy stops improving.'], result: 'The lowest measured expectation value is the algorithm’s estimate. VQE is designed with near-term hardware in mind, though accuracy depends on the ansatz, measurements, optimization method, and noise level.' },
   { title: 'QAOA – Quantum Approximate Optimization Algorithm', intro: 'Alternate problem and mixing operations to search for strong solutions to combinatorial problems.', goal: 'QAOA is a hybrid variational method for optimization. It represents the objective as a cost Hamiltonian and uses alternating circuit layers to favor bit strings with good scores.', steps: ['Prepare a balanced starting state over candidate bit strings.', 'Apply a cost layer that encodes the objective, followed by a mixing layer that explores alternatives.', 'Optimize the layer angles classically, then sample bit strings from the best circuit.'], result: 'A high-probability bit string is a candidate solution, which should be evaluated with the original classical objective. More layers can increase expressiveness but also add depth and make optimization harder on noisy devices.' }
 ];
+// These four topics are intentionally not part of the Learn Quantum algorithm sequence.
+algorithmTopics.splice(5, 4);
+
 const simulationTopics = [
   { title: 'Introduction to Quantum Simulation', intro: 'Learn what a quantum simulator represents, what it can predict, and why it is useful before using quantum hardware.', body: `<div class="qubit-section"><h2>A model of a quantum experiment</h2><p>A quantum simulator is ordinary software that follows the mathematical rules of a quantum system. It begins with qubits, applies the gates in a circuit, and reports the state or the measurement outcomes the ideal circuit predicts.</p><p>For example, a simulator can prepare <strong>|0&gt;</strong>, apply a Hadamard gate, and show the state <strong>|+&gt; = (|0&gt; + |1&gt;) / sqrt(2)</strong>. This tells us that repeated measurements should produce 0 and 1 with equal probability.</p></div><div class="qubit-section"><h2>Why simulate first?</h2><p>Simulation is a safe place to check a circuit, build intuition, and compare an expected result with actual hardware results. An ideal simulator has no noise unless we deliberately add a noise model, so it gives a useful baseline rather than a guarantee about a physical machine.</p></div>` },
   { title: 'How Quantum Simulators Work', intro: 'Follow the simple loop a simulator uses to turn a circuit description into predicted quantum results.', body: `<div class="qubit-section"><h2>Represent, evolve, inspect</h2><p>Most simulators store a mathematical description of the current quantum state. Each gate is represented by a unitary operation U, and applying that gate updates the state:</p><div class="qubit-equation">|psi'&gt; = U |psi&gt;</div><p>The simulator repeats this update from left to right through the circuit. A two-qubit circuit has four basis states—|00&gt;, |01&gt;, |10&gt;, and |11&gt;—so its state needs four amplitudes.</p></div><div class="qubit-section"><h2>A small example</h2><p>Start with |00&gt;. Apply H to the first qubit, then CNOT with that qubit as control. An ideal simulator produces the Bell state <strong>(|00&gt; + |11&gt;) / sqrt(2)</strong>. Its amplitudes reveal the correlation before any measurement is sampled.</p></div>` },
@@ -718,6 +721,283 @@ function circuitExtension(index) {
 function loadCircuitTopic(topicIndex, updateHash = true) { state.activeChapter = 3; state.activeCircuitTopic = Math.max(0, Math.min(7, topicIndex)); state.circuitsExpanded = true; const topic = circuitTopics[state.activeCircuitTopic]; if (updateHash) window.location.hash = `circuit-${state.activeCircuitTopic + 1}`; $('#lesson-number').textContent = '04'; $('#lesson-category').textContent = 'QUANTUM CIRCUITS'; $('#lesson-title').textContent = topic.title; $('#lesson-intro').textContent = topic.intro; $('#lesson-type').textContent = chapters[3].type; const last = state.activeCircuitTopic === 7; $('#next-title').textContent = last ? chapters[4].title : circuitTopics[state.activeCircuitTopic + 1].title; $('#previous-title').textContent = state.activeCircuitTopic ? circuitTopics[state.activeCircuitTopic - 1].title : chapters[2].title; $('#footer-next-title').textContent = last ? chapters[4].title : circuitTopics[state.activeCircuitTopic + 1].title; $('#next-button small').textContent = last ? 'Next chapter' : 'Next topic'; $('#lesson-body').innerHTML = circuitLessonTemplate(state.activeCircuitTopic); $('#mobile-breadcrumb').innerHTML = `Chapter 04 <span>/</span> ${topic.title}`; $('#doc-breadcrumb').innerHTML = `Quantum Circuits <span>/</span> ${topic.title}`; renderSidebar(); renderContents(); wireInteractions(3); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
 function algorithmLessonTemplate(topic) {
+  if (topic.title === 'Deutsch Algorithm') return `<section class="qubit-lesson algorithm-lesson">
+    <div class="qubit-section"><h2>What is the Deutsch Algorithm?</h2><p>The Deutsch Algorithm answers one specific question about a one-bit function f(x): are its two outputs the same, or are they different? It introduces a central quantum-computing idea: an oracle can place information into phase, and interference can reveal a property of a function without reading each output one at a time.</p><p>The problem comes with a promise: f is either constant or balanced. That promise makes the final measurement meaningful.</p></div>
+    <div class="qubit-section"><h2>Constant and balanced functions</h2><p>For one input bit there are only two inputs, 0 and 1. A constant function returns the same value for both. A balanced function returns 0 once and 1 once.</p><div class="gate-comparison"><div><strong>Function type</strong><strong>f(0)</strong><strong>f(1)</strong></div><div><span>Constant: always 0</span><span>0</span><span>0</span></div><div><span>Constant: always 1</span><span>1</span><span>1</span></div><div><span>Balanced: f(x) = x</span><span>0</span><span>1</span></div><div><span>Balanced: f(x) = 1 - x</span><span>1</span><span>0</span></div></div><p>The implementation below uses the balanced function f(x) = x. Its oracle is a CNOT: when the input qubit is 1, it flips the auxiliary qubit.</p></div>
+    <div class="qubit-section"><h2>Classical approach vs quantum approach</h2><div class="comparison-grid"><div><strong>Classical</strong><span>Evaluate f(0) and f(1), then compare the two answers. In the worst case, two oracle queries are needed.</span></div><div><strong>Quantum</strong><span>Prepare both inputs as amplitudes, call the promised oracle once, and use interference to identify the type.</span></div></div><p>This is a query-complexity advantage for the promised problem. It does not mean a quantum computer prints both values of f, or that every practical problem receives the same kind of speed-up.</p></div>
+    <div class="qubit-section"><h2>The intuition: phase becomes an answer</h2><p>After the first Hadamard gates, the input qubit has amplitude for 0 and 1, while the auxiliary qubit is prepared in the minus state (|0&gt; - |1&gt;) / sqrt(2). The oracle U<sub>f</sub>|x,y&gt; = |x, y XOR f(x)&gt; then writes f(x) into the input branch's relative phase: (-1)<sup>f(x)</sup>.</p><p>If f(0) and f(1) agree, the two input branches have matching phase; the final H makes them interfere at measurement 0. If they differ, one branch has an opposite phase; the final H makes them interfere at measurement 1. That controlled interference is the algorithm's quantum advantage.</p></div>
+    <div class="qubit-section"><h2>Circuit walkthrough</h2><ol><li><strong>Prepare two qubits:</strong> the input starts in |0&gt; and the auxiliary qubit starts in |0&gt;.</li><li><strong>Apply X to qubit 1:</strong> this prepares the auxiliary qubit as |1&gt;.</li><li><strong>Apply H to both qubits:</strong> the input becomes an equal superposition and the auxiliary qubit becomes |-&gt;.</li><li><strong>Apply the balanced oracle:</strong> CNOT(0, 1) implements f(x) = x. It conditionally flips the auxiliary qubit and creates the phase kickback.</li><li><strong>Apply the final H to qubit 0:</strong> it converts the relative phase into a computational-basis bit.</li><li><strong>Run and measure qubit 0:</strong> 0 means CONSTANT; 1 means BALANCED. The auxiliary qubit carries no further information needed for this decision.</li></ol><div class="circuit-sketch"><div>q0: |0&gt; -- H -- ● -- H -- M</div><div>q1: |0&gt; -- X -- H -- ⊕ ------</div></div></div>
+    <div class="qubit-section"><h2>Complete Sia-Script / HDQS implementation</h2><p>This Colab-verified program builds the balanced f(x) = x version of Deutsch's oracle, runs it, extracts the input-qubit measurement, and translates that bit into the promised classification.</p><pre class="hdqs-code"><code>from sia import hdqs, HDQSError
+
+BASE_URL = "http://31.97.239.213:8000"
+API_KEY = "test_token_123"
+
+q = hdqs(
+    base_url=BASE_URL,
+    api_key=API_KEY
+)
+
+q.qbt_create(num_qubits=2)
+
+q.qbt_run([
+    "x 1",
+    "h 0",
+    "h 1",
+    "cnot 0 1",
+    "h 0"
+])
+
+meas = q.qbt_measure([0])
+result = meas["result"]["measurement_results"][0]["result"]
+
+print("Measurement result:", result)
+if result == "0":
+    print("Function is CONSTANT")
+else:
+    print("Function is BALANCED")</code></pre></div>
+    <div class="qubit-section"><h2>Read the Sia-Script code line by line</h2><ul class="code-explanation"><li><strong>from sia import hdqs, HDQSError</strong> imports the HDQS client factory and its error type. The latter is available for handling HDQS errors if a notebook needs explicit error handling.</li><li><strong>BASE_URL</strong> and <strong>API_KEY</strong> hold the HDQS server address and the credentials used by this working Colab example.</li><li><strong>hdqs(base_url=BASE_URL, api_key=API_KEY)</strong> opens the configured HDQS client and stores it in <strong>q</strong>.</li><li><strong>q.qbt_create(num_qubits=2)</strong> creates the two-qubit circuit: qubit 0 is the input and qubit 1 is the auxiliary target.</li><li>The five strings passed to <strong>q.qbt_run(...)</strong> are the circuit in order: <strong>"x 1"</strong> prepares the auxiliary qubit in |1&gt;; <strong>"h 0"</strong> creates the input superposition; <strong>"h 1"</strong> creates |-&gt;; <strong>"cnot 0 1"</strong> is the balanced f(x) = x oracle; and the final <strong>"h 0"</strong> converts phase into the answer bit.</li><li><strong>q.qbt_measure([0])</strong> measures input qubit 0 after the circuit has run. The list notation asks HDQS to measure qubit 0.</li><li><strong>meas["result"]["measurement_results"][0]["result"]</strong> follows the returned result structure: the operation result, its first requested measurement, then that measurement's bit value. It remains a string, so the test correctly compares it to <strong>"0"</strong>.</li><li><strong>The if statement</strong> converts the extracted bit into the promised human-readable conclusion.</li></ul></div>
+    <div class="qubit-section"><h2>Why 0 means CONSTANT and 1 means BALANCED</h2><p>The final H is the decoder. A constant oracle gives the input branches the same relative phase, so their amplitudes add at |0&gt; and cancel at |1&gt;. A balanced oracle gives the branches opposite relative phase, so they cancel at |0&gt; and add at |1&gt;. In an ideal Deutsch circuit, the input measurement is deterministic: <strong>0 = CONSTANT</strong> and <strong>1 = BALANCED</strong>.</p><pre class="hdqs-output"><code>Measurement result: 1
+Function is BALANCED</code></pre><p>This successful output is expected for the CNOT oracle above because it implements the balanced function f(x) = x.</p></div>
+    <div class="qubit-section"><h2>Run it in Google Colab</h2><ol><li>Open <a href="https://colab.research.google.com/" target="_blank" rel="noopener">Google Colab</a> and create a new Python notebook.</li><li>In the first cell, install Sia-Script: <code>!pip install sia-script</code>.</li><li>Run that cell, then paste the complete program above into a new code cell.</li><li>Run the program cell and inspect the two printed lines. With the balanced CNOT oracle, the intended result is <strong>Measurement result: 1</strong>, followed by <strong>Function is BALANCED</strong>.</li></ol><p>If your installed Sia-Script release exposes a different import path or result container, follow its package documentation for that release while keeping the same circuit sequence and measurement interpretation.</p></div>
+    <aside class="key-idea"><span class="card-label">Key Takeaways</span><ul><li>Deutsch's promised problem distinguishes same outputs from different outputs for a one-bit function.</li><li>A classical solution may need two function queries; the quantum circuit uses one oracle query.</li><li>H, the oracle, and the final H use phase kickback and interference to encode the answer in qubit 0.</li><li>For the ideal circuit, 0 means CONSTANT and 1 means BALANCED.</li></ul></aside>
+  </section>`;
+  if (topic.title === 'Deutsch-Jozsa Algorithm') return `<section class="qubit-lesson algorithm-lesson">
+    <div class="qubit-section"><h2>What is the Deutsch–Jozsa Algorithm?</h2><p>Deutsch–Jozsa extends Deutsch's question to a function of many input bits. It decides a global property of a promised Boolean function: is it constant or balanced? It matters because a quantum oracle can encode information about all input branches at once, and interference can reveal that property with one oracle query.</p></div>
+    <div class="qubit-section"><h2>Problem statement: constant vs balanced</h2><p>For n input bits, f maps 2<sup>n</sup> input strings to 0 or 1. The promise is that it is either constant—the same output for every string—or balanced—0 for exactly half of the strings and 1 for the other half. This example has two input qubits, so its inputs are 00, 01, 10, and 11.</p><div class="gate-comparison"><div><strong>Example function</strong><strong>Outputs</strong><strong>Type</strong></div><div><span>f(x) = 0</span><span>0, 0, 0, 0</span><span>Constant</span></div><div><span>f(x) = 1</span><span>1, 1, 1, 1</span><span>Constant</span></div><div><span>f(x) = x<sub>0</sub> XOR x<sub>1</sub></span><span>0, 1, 1, 0</span><span>Balanced</span></div></div></div>
+    <div class="qubit-section"><h2>Classical vs quantum approach</h2><div class="comparison-grid"><div><strong>Classical approach</strong><span>Query inputs one at a time. Under the promise, a deterministic method may need more than half of all inputs before it can rule out the other case.</span></div><div><strong>Quantum approach</strong><span>Prepare all input strings as amplitudes, query the oracle once, and use a final Hadamard layer to expose the global pattern.</span></div></div><p>This is an oracle-query advantage for a promised problem, and a clear demonstration of how interference can be used to compute a property rather than list all outputs.</p></div>
+    <div class="qubit-section"><h2>Quantum intuition and circuit flow</h2><p>q0 and q1 are input qubits; q2 is the ancilla. X prepares the ancilla in |1&gt;. The first H gates put the inputs into an equal superposition and turn the ancilla into |-&gt;. The oracle writes function information into relative phase. Final H gates cause matching phases to collect at 00 for a constant function, while a balanced oracle leaves a non-zero input result.</p><div class="circuit-sketch"><div>q0: |0&gt; -- H -- ● -------- H -- M</div><div>q1: |0&gt; -- H -- ┼ -- ● ---- H -- M</div><div>q2: |0&gt; -- X -- H -- ⊕ -- ⊕ ------</div></div></div>
+    <div class="qubit-section"><h2>Step-by-step circuit explanation</h2><ol><li><strong>Create three qubits:</strong> q0 and q1 are the two-bit input; q2 is the ancilla.</li><li><strong>X on q2:</strong> changes the ancilla from |0&gt; to |1&gt;.</li><li><strong>H on q0 and q1:</strong> creates equal amplitude for all four input strings. <strong>H on q2</strong> turns |1&gt; into |-&gt;.</li><li><strong>CNOT(0, 2) and CNOT(1, 2):</strong> together implement f(x) = x<sub>0</sub> XOR x<sub>1</sub>, a balanced function.</li><li><strong>Final H on q0 and q1:</strong> turns the oracle phase pattern into a readable input bit string.</li><li><strong>Measure q0 and q1:</strong> 00 means constant; any non-zero result means balanced under the promise.</li></ol></div>
+    <div class="qubit-section"><h2>Exact Sia-Script / HDQS implementation</h2><pre class="hdqs-code"><code>from sia import hdqs
+
+BASE_URL = "http://31.97.239.213:8000"
+API_KEY = "test_token_123"
+
+def main():
+    q = hdqs(base_url=BASE_URL, api_key=API_KEY)
+    q.qbt_create(num_qubits=3)
+
+    q.qbt_run([
+        "x 2",
+        "h 0",
+        "h 1",
+        "h 2",
+        "cnot 0 2",
+        "cnot 1 2",
+        "h 0",
+        "h 1"
+    ])
+
+    meas = q.qbt_measure([0, 1], collapse=True)
+
+    results = sorted(
+        meas["result"]["measurement_results"],
+        key=lambda x: x["qubit"]
+    )
+
+    bits = "".join(r["result"] for r in results)
+
+    print("\nDeutsch–Jozsa Result:", bits)
+
+    if bits == "00":
+        print("Function is CONSTANT")
+    else:
+        print("Function is BALANCED")
+
+main()</code></pre><p>The HDQS API calls and gate sequence match the supplied workflow. The endpoint and API key provide the required client connection.</p></div>
+    <div class="qubit-section"><h2>Line-by-line code guide</h2><ul class="code-explanation"><li><strong>from sia import hdqs</strong> imports the HDQS client factory. <strong>BASE_URL</strong> and <strong>API_KEY</strong> supply its connection values.</li><li><strong>def main()</strong> groups the runnable example. <strong>hdqs(base_url=BASE_URL, api_key=API_KEY)</strong> creates the configured client q.</li><li><strong>q.qbt_create(num_qubits=3)</strong> initializes the three-qubit circuit.</li><li><strong>q.qbt_run([...])</strong> applies its gate strings in order: X prepares the ancilla; the first three H gates prepare superposition and |-&gt;; the two CNOTs are the oracle; and the final two H gates create the deciding interference.</li><li><strong>q.qbt_measure([0, 1], collapse=True)</strong> measures both input qubits after execution. The list selects q0 and q1; collapse=True requests projective measurement.</li><li><strong>meas["result"]["measurement_results"]</strong> accesses HDQS's measurement records. <strong>sorted(..., key=lambda x: x["qubit"])</strong> puts them in q0, q1 order before they are read.</li><li><strong>"".join(r["result"] for r in results)</strong> joins the two sorted bit results into one string such as 11.</li><li><strong>if bits == "00"</strong> is the Deutsch–Jozsa decision condition: only 00 is constant; every other bit string is balanced under the promise.</li></ul></div>
+    <div class="qubit-section"><h2>Two CNOT oracle gates and interference</h2><p>CNOT(0, 2) conditionally flips the ancilla for q0 = 1, and CNOT(1, 2) does the same for q1 = 1. Two flips cancel for equal input bits and one flip remains for unequal bits. The oracle is therefore XOR: 0, 1, 1, 0 across 00, 01, 10, 11—exactly balanced.</p><p>With the ancilla in |-&gt;, those conditional flips become relative phase changes. The final H gates let the input amplitudes interfere, yielding 11 for this oracle.</p></div>
+    <div class="qubit-section"><h2>Actual output: why 11 is BALANCED</h2><pre class="hdqs-output"><code>Deutsch–Jozsa Result: 11
+Function is BALANCED</code></pre><p>The rule is <strong>00 → CONSTANT</strong>; <strong>any non-zero result → BALANCED</strong>. Thus 11 is balanced in this run. Importantly, <strong>11 itself does not mean “balanced”</strong>: it is a non-zero result from this particular balanced oracle. Other balanced oracles can produce different non-zero strings; only 00 is reserved for a constant function.</p></div>
+    <div class="qubit-section"><h2>Run it in Google Colab</h2><ol><li>Open <a href="https://colab.research.google.com/" target="_blank" rel="noopener">Google Colab</a> and create a Python notebook.</li><li>Install Sia-Script in the first cell: <code>!pip install sia-script</code>.</li><li>Paste the complete program into the next cell, retaining the HDQS connection values and gate list.</li><li>Run it and verify the displayed result: 11, followed by <strong>Function is BALANCED</strong>.</li></ol></div>
+    <aside class="key-idea"><span class="card-label">Key Takeaways</span><ul><li>Deutsch–Jozsa distinguishes constant from balanced promised functions.</li><li>H gates, the oracle, and final H gates use phase kickback and interference to encode the global answer.</li><li>The two CNOTs implement the balanced XOR oracle in this example.</li><li>00 means CONSTANT; any non-zero result means BALANCED. Therefore 11 is balanced by the decision rule, not its pattern alone.</li></ul></aside>
+  </section>`;
+  if (topic.title === 'Bernstein-Vazirani Algorithm') return `<section class="qubit-lesson algorithm-lesson">
+    <div class="qubit-section"><h2>What is Bernstein–Vazirani?</h2><p>Bernstein–Vazirani is a quantum algorithm for recovering a hidden bit string. An oracle has a secret string s, and its output depends on the parity of the bits selected by s. The goal is to learn every bit of s.</p><p>It is useful because it isolates a powerful quantum idea: one carefully prepared oracle call can encode all bits of a hidden string into phase, and Hadamard interference can recover those bits together.</p></div>
+    <div class="qubit-section"><h2>Problem statement: the hidden secret string</h2><p>Let the hidden string be s = 101. The oracle computes f(x) = s · x mod 2: multiply matching bits, add them modulo 2, and return one bit. For example, the first and third input positions matter because those are the positions where s has a 1.</p><div class="gate-comparison"><div><strong>Input x</strong><strong>f(x) for s = 101</strong><strong>Reason</strong></div><div><span>000</span><span>0</span><span>No selected input bit is 1</span></div><div><span>001</span><span>1</span><span>Third selected bit is 1</span></div><div><span>100</span><span>1</span><span>First selected bit is 1</span></div><div><span>101</span><span>0</span><span>1 XOR 1 = 0</span></div></div></div>
+    <div class="qubit-section"><h2>Classical vs quantum approach</h2><div class="comparison-grid"><div><strong>Classical</strong><span>Query carefully chosen inputs to discover which positions affect the parity. For an n-bit secret, this takes n oracle queries in the standard deterministic approach.</span></div><div><strong>Quantum</strong><span>Prepare all input positions in superposition, make one oracle query, then measure all n input qubits to recover the complete string.</span></div></div><p>For this three-bit example, the classical approach needs three informative queries; the Bernstein–Vazirani circuit uses one oracle call.</p></div>
+    <div class="qubit-section"><h2>Quantum intuition and circuit flow</h2><p>The first three qubits form the input register. One extra ancilla qubit begins in |0&gt;, becomes |1&gt; after X, and becomes |-&gt; after H. The input H gates prepare every three-bit input as an amplitude. CNOT gates at the secret's 1 positions encode that secret as phase. The final H gates convert the phase pattern into the measurable bit string 101.</p><div class="circuit-sketch"><div>q0: |0&gt; -- H -- ● -- H -- M</div><div>q1: |0&gt; -- H -------- H -- M</div><div>q2: |0&gt; -- H -- ● -- H -- M</div><div>q3: |0&gt; -- X -- H -- ⊕ -- ⊕</div></div></div>
+    <div class="qubit-section"><h2>Step-by-step execution</h2><ol><li><strong>Create n + 1 qubits:</strong> three input qubits for 101 and one ancilla.</li><li><strong>Prepare superposition:</strong> X puts the ancilla in |1&gt;, then H acts on every qubit. The inputs become an equal superposition and the ancilla becomes |-&gt;.</li><li><strong>Encode the oracle:</strong> the loop adds CNOTs only where hidden_string has 1. For 101, that creates CNOT(0, 3) and CNOT(2, 3); no CNOT is added for position 1.</li><li><strong>Interfere:</strong> final H gates on the inputs turn their relative phases into the basis state |101&gt;.</li><li><strong>Measure:</strong> sort results by qubit index, join their string values, and compare the measured string with the hidden one.</li></ol></div>
+    <div class="qubit-section"><h2>Sia-Script / HDQS implementation</h2><pre class="hdqs-code"><code>from sia import hdqs
+
+BASE_URL = "http://31.97.239.213:8000"
+API_KEY = "test_token_123"
+
+def main():
+    print(" BERNSTEIN–VAZIRANI (DETAILED DEMO) ")
+
+    # CONFIGURATION
+    hidden_string = "101"
+    n = len(hidden_string)
+
+    q = hdqs(
+        base_url=BASE_URL,
+        api_key=API_KEY
+    )
+
+    print("Hidden string:", hidden_string)
+    print("Number of input qubits:", n)
+
+    # STEP 1: Create system
+    print("\nStep 1: Initialize quantum register")
+
+    q.qbt_create(num_qubits=n + 1)
+
+    # STEP 2: Prepare superposition
+    print("\nStep 2: Prepare superposition")
+
+    prep_ops = []
+
+    # Ancilla to |1&gt;
+    prep_ops.append(f"x {n}")
+
+    # Hadamard on all qubits
+    for i in range(n + 1):
+        prep_ops.append(f"h {i}")
+
+    q.qbt_run(prep_ops)
+
+    print("Applied X to ancilla and H to all qubits.")
+
+    # STEP 3: Oracle encoding hidden string
+    print("\nStep 3: Apply oracle encoding")
+
+    oracle_ops = []
+
+    for i, bit in enumerate(hidden_string):
+        if bit == "1":
+            oracle_ops.append(f"cnot {i} {n}")
+
+    q.qbt_run(oracle_ops)
+
+    print("Oracle encoded using CNOTs on positions where s_i = 1")
+
+    # STEP 4: Interference
+    print("\nStep 4: Apply final Hadamards")
+
+    final_ops = []
+
+    for i in range(n):
+        final_ops.append(f"h {i}")
+
+    q.qbt_run(final_ops)
+
+    # STEP 5: Measurement
+    print("\nStep 5: Measure input register")
+
+    meas = q.qbt_measure(list(range(n)), collapse=True)
+
+    results = sorted(
+        meas["result"]["measurement_results"],
+        key=lambda x: x["qubit"]
+    )
+
+    measured_string = "".join(
+        r["result"] for r in results
+    )
+
+    print("\nMeasured string:", measured_string)
+
+    # INTERPRETATION
+    print("\nInterpretation:")
+
+    if measured_string == hidden_string:
+        print("Hidden string successfully recovered.")
+    else:
+        print("Unexpected result.")
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        print(f"Script failed: {e}")</code></pre></div>
+    <div class="qubit-section"><h2>Line-by-line code and gate guide</h2><ul class="code-explanation"><li><strong>hidden_string = "101"</strong> declares the secret being encoded for this demonstration. <strong>n = len(hidden_string)</strong> lets the same program scale to another string length.</li><li><strong>hdqs(base_url=BASE_URL, api_key=API_KEY)</strong> creates the configured HDQS client; <strong>q.qbt_create(num_qubits=n + 1)</strong> makes three inputs plus one ancilla.</li><li><strong>prep_ops</strong> stores gate strings before they are run. <strong>f"x {n}"</strong> selects the final qubit, q3, as the ancilla and prepares |1&gt;.</li><li>The first loop appends <strong>h 0</strong> through <strong>h 3</strong>. Inputs q0–q2 enter superposition; H on the ancilla converts |1&gt; to |-&gt;.</li><li><strong>oracle_ops</strong> is built from the secret. The enumerate loop appends a CNOT only for a 1 bit. With 101 it produces <strong>cnot 0 3</strong> and <strong>cnot 2 3</strong>, precisely encoding the first and third secret bits.</li><li><strong>q.qbt_run(...)</strong> executes each ordered gate list. Splitting preparation, oracle, and final-H layers makes each algorithm stage visible.</li><li>The final loop adds H only to q0–q2. Those gates cause interference that maps the phase pattern to |101&gt;.</li><li><strong>q.qbt_measure(list(range(n)), collapse=True)</strong> measures only input qubits [0, 1, 2]. The ancilla is not needed for secret recovery.</li><li><strong>sorted(..., key=lambda x: x["qubit"])</strong> ensures returned records are in q0, q1, q2 order. <strong>"".join(r["result"] for r in results)</strong> then creates the correctly ordered bit string.</li><li>The final condition compares the measured string with the known demo secret and prints whether recovery succeeded.</li></ul></div>
+    <div class="qubit-section"><h2>Why measurement recovers the secret</h2><p>Each CNOT connected to the |-&gt; ancilla creates a phase flip when its corresponding secret bit is 1. The oracle therefore applies the phase (-1)<sup>s·x</sup> across the input superposition. Applying H to every input qubit is the inverse transform that turns exactly that phase pattern into |s&gt;.</p><p>For s = 101, the ideal input measurement is 101. It is not a guess or a separately decoded output: the final Hadamard layer makes the hidden secret itself the deterministic ideal measurement bit string.</p></div>
+    <div class="qubit-section"><h2>Expected output, read line by line</h2><pre class="hdqs-output"><code> BERNSTEIN–VAZIRANI (DETAILED DEMO) 
+Hidden string: 101
+Number of input qubits: 3
+
+Step 1: Initialize quantum register
+Step 2: Prepare superposition
+Applied X to ancilla and H to all qubits.
+Step 3: Apply oracle encoding
+Oracle encoded using CNOTs on positions where s_i = 1
+Step 4: Apply final Hadamards
+Step 5: Measure input register
+
+Measured string: 101
+
+Interpretation:
+Hidden string successfully recovered.</code></pre><p>The first lines confirm the chosen secret and register size. The next messages identify the preparation, oracle, interference, and measurement stages. <strong>Measured string: 101</strong> matches the hidden string exactly, so the final message confirms successful recovery.</p></div>
+    <div class="qubit-section"><h2>Run it in Google Colab</h2><ol><li>Open <a href="https://colab.research.google.com/" target="_blank" rel="noopener">Google Colab</a> and create a Python notebook.</li><li>Install the package in the first cell: <code>!pip install sia-script</code>.</li><li>Paste the complete program into the next cell, including the configured HDQS endpoint and API key.</li><li>Run the cell and check that the measurement reports 101 and that the interpretation confirms recovery.</li></ol></div>
+    <aside class="key-idea"><span class="card-label">Key Takeaways</span><ul><li>Bernstein–Vazirani recovers a hidden n-bit string encoded by a parity oracle.</li><li>Classically, n informative oracle queries are needed; the ideal quantum circuit uses one oracle query.</li><li>CNOTs appear only at secret-bit positions equal to 1, encoding the secret in relative phase.</li><li>Final Hadamards turn that phase into the measured secret string—in this example, 101.</li></ul></aside>
+  </section>`;
+  if (topic.title === "Simon's Algorithm") return `<section class="qubit-lesson algorithm-lesson">
+<div class="qubit-section"><h2>What is Simon’s Algorithm?</h2><p>Simon’s Algorithm finds a hidden non-zero bit string s in a promised function where f(x) = f(x XOR s). Every output has exactly two matching inputs, separated by the same hidden XOR mask s. It is an early example of a quantum algorithm that exposes hidden structure rather than searching for one marked item.</p></div>
+<div class="qubit-section"><h2>Why we need it and the problem it solves</h2><p>The task is to recover s without listing the complete function table. Classically, finding enough matching output pairs can require exponentially many queries. Quantumly, a superposition query and measurement create equations of the form y · s = 0 mod 2; enough independent equations reveal s with ordinary binary linear algebra.</p><div class="gate-comparison"><div><strong>Approach</strong><strong>Oracle information</strong><strong>Result</strong></div><div><span>Classical</span><span>Query inputs until matching outputs reveal pairs</span><span>Can require exponentially many queries</span></div><div><span>Quantum</span><span>Use interference to sample equations y · s = 0</span><span>Solve the collected equations classically</span></div></div></div>
+<div class="qubit-section"><h2>Core intuition, terms, and circuit flow</h2><p><strong>XOR</strong> means bitwise addition modulo 2. The <strong>secret string</strong> is s. The <strong>oracle</strong> implements the promised function. The input register begins in an equal superposition; after the oracle, measuring the output register leaves the input register in a superposition of two values x and x XOR s. A final Hadamard layer produces a bit string y satisfying y · s = 0 mod 2.</p><ol><li>Prepare an input register and output register in |0...0&gt;.</li><li>Apply H to every input qubit and call the oracle.</li><li>Measure or discard the output register; this leaves a hidden pair in the input register.</li><li>Apply H to the input register and measure y.</li><li>Repeat, collect independent equations, and solve for s over mod-2 arithmetic.</li></ol></div>
+<div class="qubit-section"><h2>Why measured equations reveal the secret</h2><p>For each sample y, the algorithm guarantees y · s = 0 mod 2. If s = 101, examples of valid equations include y = 010, because 0·1 XOR 1·0 XOR 0·1 = 0. Independent samples constrain the unknown bits of s until only the promised non-zero secret remains. A single measurement normally does not reveal s by itself.</p></div>
+<div class="qubit-section"><h2>Sia-Script / HDQS implementation and output</h2><p>The supplied <code>sia_hdqs_algorithms.ipynb</code> contains no Simon’s Algorithm code cell and no Simon output. To avoid inventing unsupported HDQS operations, this page does not display substitute code or a fabricated result. When the project’s Simon cell is added, it should use its exact HDQS code here and document the returned equations before solving them.</p></div>
+<div class="qubit-section"><h2>Google Colab workflow</h2><ol><li>Install the project’s pinned Sia-Script version: <code>!pip install -q sia-script==0.6.5</code>.</li><li>Set the notebook’s BASE_URL and API_KEY configuration.</li><li>Run the supplied Simon cell repeatedly to collect independent y samples.</li><li>Solve y · s = 0 mod 2 classically and verify f(x) = f(x XOR s).</li></ol></div>
+<aside class="key-idea"><span class="card-label">Key Takeaways</span><ul><li>Simon’s promise is f(x) = f(x XOR s).</li><li>Quantum interference produces equations about s, not the full truth table.</li><li>Several independent measurements plus classical mod-2 linear algebra recover the secret.</li></ul></aside></section>`;
+  if (topic.title === "Grover's Algorithm") return `<section class="qubit-lesson algorithm-lesson">
+<div class="qubit-section"><h2>What is Grover’s Algorithm?</h2><p>Grover’s Algorithm searches an unstructured set for a marked item. This project’s three-qubit circuit marks |111&gt; and performs one Grover iteration. It uses an oracle to flip the marked state’s phase, then a diffusion operator to amplify its amplitude.</p></div>
+<div class="qubit-section"><h2>Why we need it: classical vs quantum</h2><div class="comparison-grid"><div><strong>Classical search</strong><span>Check candidates one by one; an unsorted eight-item space needs about four checks on average.</span></div><div><strong>Grover search</strong><span>Use oracle phase inversion and diffusion to increase the marked state’s measurement probability in about sqrt(N) iterations.</span></div></div><p>For N = 8, one iteration is the project’s chosen demonstration. Measurements remain probabilistic; amplification means |111&gt; is expected to be the dominant outcome, not an unconditional guarantee for every finite sample.</p></div>
+<div class="qubit-section"><h2>Core concepts and circuit working</h2><ol><li><strong>Superposition:</strong> H on all three qubits gives equal starting amplitude to eight strings.</li><li><strong>Oracle:</strong> H–CCNOT–H on q2 implements a phase inversion of |111&gt;.</li><li><strong>Diffusion:</strong> H, X, a second phase flip, X, H reflects amplitudes about their average.</li><li><strong>Amplitude amplification:</strong> the marked amplitude increases while unmarked amplitudes decrease.</li><li><strong>Measurement:</strong> 25 sampled runs are counted and the largest count is printed as the dominant state.</li></ol><p>The backend has no native CCNOT/Toffoli operation, so the project decomposes it into H, CNOT, and RZ gates. This implements the same controlled-controlled-X behavior using supported basic operations.</p></div>
+<div class="qubit-section"><h2>Complete project Sia-Script / HDQS code</h2><pre class="hdqs-code"><code>from collections import defaultdict
+from math import pi
+from sia import hdqs
+
+def toffoli_decomposed(c1, c2, t):
+    return [
+        f"h {t}", f"cnot {c2} {t}", f"rz {t} {-pi/4}",
+        f"cnot {c1} {t}", f"rz {t} {pi/4}", f"cnot {c2} {t}",
+        f"rz {t} {-pi/4}", f"cnot {c1} {t}", f"rz {c2} {pi/4}",
+        f"rz {t} {pi/4}", f"h {t}", f"cnot {c1} {c2}",
+        f"rz {c1} {pi/4}", f"rz {c2} {-pi/4}", f"cnot {c1} {c2}",
+    ]
+
+def main():
+    print(" GROVER (3-QUBIT) - NO NATIVE CCNOT ")
+    shots = 25
+    counts = defaultdict(int)
+    q = hdqs(base_url=BASE_URL, api_key=API_KEY)
+
+    for _ in range(shots):
+        q.reset_session()
+        q.qbt_create(num_qubits=3)
+        q.qbt_run(["h 0", "h 1", "h 2"])
+
+        q.qbt_run(["h 2"])
+        q.qbt_run(toffoli_decomposed(0, 1, 2))
+        q.qbt_run(["h 2"])
+
+        q.qbt_run(["h 0", "h 1", "h 2", "x 0", "x 1", "x 2", "h 2"])
+        q.qbt_run(toffoli_decomposed(0, 1, 2))
+        q.qbt_run(["h 2", "x 0", "x 1", "x 2", "h 0", "h 1", "h 2"])
+
+        meas = q.qbt_measure([0,1,2], collapse=True)
+        results = sorted(meas["result"]["measurement_results"], key=lambda x: x["qubit"])
+        bitstring = "".join(r["result"] for r in results)
+        counts[bitstring] += 1
+
+    print("Distribution:")
+    print(dict(counts))
+    dominant = max(counts, key=counts.get)
+    print("\nDominant state:", dominant)
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        print(f"Script failed: {e}")</code></pre><p>The notebook setup cell defines <code>BASE_URL</code> and <code>API_KEY</code> before this project code runs.</p></div>
+<div class="qubit-section"><h2>Line-by-line HDQS explanation</h2><ul class="code-explanation"><li><strong>defaultdict(int)</strong> starts each measured bitstring count at zero; <strong>shots = 25</strong> repeats the experiment.</li><li><strong>hdqs(...)</strong> opens the project’s configured HDQS client. <strong>reset_session()</strong> starts each shot cleanly, and <strong>qbt_create(num_qubits=3)</strong> creates the search register.</li><li><strong>qbt_run(["h 0", "h 1", "h 2"])</strong> prepares equal superposition.</li><li>The first <strong>h 2</strong>, decomposed Toffoli, and second <strong>h 2</strong> form the marked-|111&gt; phase oracle.</li><li>The next H-X-H/Toffoli/H-X-H sequence is the diffusion operator. It changes amplitudes about their average, amplifying the marked state.</li><li><strong>qbt_measure([0,1,2], collapse=True)</strong> measures the complete register. Results are sorted by qubit index and joined, so each count has stable bit order.</li><li><strong>max(counts, key=counts.get)</strong> reports the most frequent sampled state.</li></ul></div>
+<div class="qubit-section"><h2>Expected output and why it answers the search</h2><pre class="hdqs-output"><code> GROVER (3-QUBIT) - NO NATIVE CCNOT 
+Distribution:
+{... sampled three-bit counts ...}
+
+Dominant state: 111</code></pre><p>The notebook records the expected behavior—|111&gt; is amplified significantly—but does not include an executed distribution, so the individual counts are not invented here. A correct run prints its actual 25-shot dictionary and should identify 111 as the dominant state. That result follows from the oracle’s phase inversion and the diffusion operator’s amplitude amplification.</p></div>
+<div class="qubit-section"><h2>Google Colab</h2><ol><li>Install the notebook version: <code>!pip install -q sia-script==0.6.5</code>.</li><li>Run its configuration cell for BASE_URL and API_KEY.</li><li>Run the exact Grover cell above.</li><li>Read the printed distribution and confirm whether 111 is dominant.</li></ol></div>
+<aside class="key-idea"><span class="card-label">Key Takeaways</span><ul><li>The project marks |111&gt; in an eight-state search space and uses one iteration.</li><li>Oracle phase inversion plus diffusion amplifies the marked amplitude.</li><li>The no-native-CCNOT implementation uses an H/CNOT/RZ Toffoli decomposition.</li><li>The measurement distribution—not a single shot—shows why |111&gt; is the most probable answer.</li></ul></aside></section>`;
   return `<section class="qubit-lesson algorithm-lesson">
     <div class="qubit-section"><h2>What problem does it explore?</h2><p>${topic.goal}</p></div>
     <div class="qubit-section"><h2>A beginner-friendly outline</h2><ol>${topic.steps.map((step) => `<li>${step}</li>`).join('')}</ol></div>
